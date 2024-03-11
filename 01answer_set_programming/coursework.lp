@@ -11,33 +11,36 @@
 % 2.5 成员数量总数为 n
 
 % 定义专业知识等级
-% exp(expert).
-% exp(knowledgeable).
-% exp(familiar).
-% exp(inexpert).
-% test: input
-#const k = 3.
-#const m = 2.
-% rule1: 确保没有分配req给声明了“INEXPERT不熟悉”的成员
+% exp(expert; knowledgeable; familiar; inexpert).
+
+% 1 所有成员
+member(Mem) :- bid(Mem, _, _).
+
+% 2 rule1: 确保没有分配req给声明了“INEXPERT不熟悉”的成员
 % 如果 Mem 对请求 Req 的 Exp 不是 inexpert，那么就将Mem 分配给请求 Req。
-assign(Mem, Req) :- bid(Mem, Req, Exp), Exp != inexpert.
+assign(Mem, Req) :- member(Mem), bid(Mem, Req, Exp), Exp != inexpert.
+% 一旦某个请求被任何成员分配，其他成员就不能再分配该请求
+% :- member(A), member(B), A != B, assign(A, Req), assign(B, Req).
 
 % rule2: 确保每个成员分配了“FAMILIAR熟悉”的请求数量不超过 k
 % 如果成员 Mem 对熟悉程度为 familiar 的请求的分配数量超过了 k，那么成员 Mem 将不再被分配竞标价格为 familiar 的请求。
-% 对于每一个成员 Mem，如果该成员有bid()，则该成员被认为是一个成员
-member(Mem) :- bid(Mem, _, _).
-:- member(Mem), #count { Req: assign(Mem, Req), Req = familiar } > k.
+:- member(Mem), #count { Req: assign(Mem, Req), bid(Mem, Req, familiar) } > k.
 
 % rule3: 尽可能将请求分配给声明了“EXPERT专家”的成员
-#maximize { 1@2, Mem, Req : assign(Mem, Req), bid(Mem, Req, expert)}.
+#maximize { 1@1, Mem, Req : assign(Mem, Req), bid(Mem, Req, expert)}.
 
 % rule4: 保持所有成员被分配工作量的大致平衡 -> 任务量差距不超过 m
-:- member(Mem1), member(Mem2), Mem1 != Mem2,
-    X = #count { Req : assign(Mem1, Req) },
-    Y = #count { Req : assign(Mem2, Req) },
-    abs(X - Y) > m.
+%num_assigned(P, N) :- member(P), N = #count(Req: assign(P, Req)).
+%:- num_assigned(A, X), num_assigned(B, Y), A != B, abs(X - Y) > m.
+% test: input
+%:- member(A), member(B), A != B, abs( #count{Req : assign(A, ReqA)} - #count{Req : assign(B, ReqB)}) > m.
+num_assigned(P, N) :- member(P), N = #count { Req : assign(P, Req) }.
+:- num_assigned(A, Na), num_assigned(B, Nb), A != B, abs(Na - Nb) > 2.
 
+#const k = 10.
+#const m = 10.
 
+#show assign/2.
 
 bid(mem1, req1, expert).
 bid(mem1, req2, inexpert).
