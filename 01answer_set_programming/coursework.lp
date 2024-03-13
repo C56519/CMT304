@@ -1,27 +1,50 @@
-#const k=2.
-#const m=2.
+% CMT304 Logic Programming Coursework
+% Student Name: Wenxuan Chen
+% Student ID: 23084626
 
+% Define constants
+#const n = 2.     % The number of members of the technical board to assign to each request.
+#const k = 2.     % Maximum number of "familiar" category submissions reviewed by each member.
+#const m = 1.     % The workload differences among members do not exceed the difference k.
+
+% All members and submissions.
 member(P) :- bid(P, _, _).
 request(R) :- bid(_, R, _).
 
-% 1 确保每个req分发到一个mem
-1{ assign(P, R) : member(P) }1 :- request(R).
-% 2 确保inexpert的mem不分发req
+% Rule 1 (Optimise): Ensure that each req(submission) is distributed to a mem(member).
+% Approach: Specify that each submission can only be allocated to one individual from the group of members.
+n{ assign(P, R) : member(P) }n :- request(R).
+
+% Rule 2: No member of the technical board is required to review a submission that is placed in the "inexpert" category.
+% Approach: The assignment is cancelled, if
+% (1) A member is assigned a request.
+% (2) And the member's expertise for the request is "inexpert".
 :- assign(P, R), bid(P, R, inexpert).
-% 3 确保每个成员分配了“FAMILIAR熟悉”的请求数量不超过 k
+
+% Rule 3: No member of the technical board is required to review more than k submissions from the "familiar" category.
+% Approach:
+% (1) For each member P, calculate the number of assigned requests with category "familiar".
+% (2) If this number exceeds the pre-defined k, the rule is activated and the allocation is prevented.
 :- member(P), #count { R : assign(P, R), bid(P, R, familiar) } > k.
 
-% 4 尽可能将请求分配给声明了“EXPERT专家”的成员，并按照熟悉度来分配
-priority(expert, 3; knowledgeable, 2; familiar, 1).
-% 计算每个请求的最大优先级
-max_priority_for_request(R, M) :- request(R), M = #max { L, P : bid(P, R, E), priority(E, L) }.
-% 确保只有最大优先级的成员被分配到请求
-:- assign(P, R), bid(P, R, E), priority(E, L), max_priority_for_request(R, M), L < M.
+% Rule 4: The total number of cases when a submission is assigned to a member who placed it in the "expert" category is as large as possible.
+% Approach: (Optimise added)
+% (1) 
+% (2) 
+#maximize {1@3, P, R : assign(P, R), bid(P, R, expert)}.
+#maximize {1@2, P, R : assign(P, R), bid(P, R, knowledgeable)}.
+#maximize {1@1, P, R : assign(P, R), bid(P, R, familiar)}.
 
-% 5 保证所有成员被分配工作量的大致平衡 -> 任务量差距不超过 m
+% Rule 5: The workloads of the technical board members are approximately equal, that is, do not differ by more than m.
+% Approach:
+% (1) For each member, compute the number of requests assigned to him.
 member_assigned(P, N) :- member(P), N = #count { R: assign(P, R) }.
-:- member(X), member(Y), X != Y, member_assigned(X, N1), member_assigned(Y, N2), |N1-N2| > m.
+% (2) For two different members, it is not allowed that the absolute difference in the number of requests assigned to them is greater than m.
+:- member(X), member(Y), X != Y,
+    member_assigned(X, N1),
+    member_assigned(Y, N2), |N1-N2| > m.
 
+%#show assign/2.
 #show assign/2.
 
 % inputs
@@ -58,7 +81,7 @@ bid(mem2, req5, expert).
 bid(mem3, req5, inexpert).
 bid(mem4, req5, knowledgeable).
 bid(mem5, req5, knowledgeable).
-bid(mem6, req7, expert).
+bid(mem6, req5, expert).
 
 bid(mem1, req6, inexpert).
 bid(mem2, req6, knowledgeable).
