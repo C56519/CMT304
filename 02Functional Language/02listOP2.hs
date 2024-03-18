@@ -56,7 +56,7 @@ searchComp l v = [ i | (i, x) <- zip [0..] l, x == v ]
 
 
 -- 6 map
---  直接定义一个不带参数的addOne函数，表示其使用map并将函数设置为默认执行一个匿名函数，将输入的每个元素+1
+--  直接定义一个不带参数的addOne函数，表示其使用 map 并将函数设置为默认执行一个匿名函数，将输入的每个元素+1
 addOne :: [Int] -> [Int]
 addOne = map (\x -> x + 1)
 
@@ -65,7 +65,7 @@ addOne = map (\x -> x + 1)
 positiveFilter :: [Int] -> [Int]
 positiveFilter = filter (\x -> x > 0)
 
--- 8 fold
+-- 8 foldr
 -- 对列表每个元素执行累加，返回累加值；如果列表为空，默认返回 0
 sumList :: [Int] -> Int
 sumList = foldr (+) 0
@@ -77,3 +77,19 @@ productList = foldr (*) 1
 -- 列表降维(推平)，将二维列表降维拼接成一维列表
 concatenateList :: [[a]] -> [a]
 concatenateList = foldr (++) []
+
+-- 9 算法：计算列表中所有正数的平方和
+-- 方法一：使用列表推导
+f1 :: [Int] -> Int
+f1 l = sum [x^2 | x <- l, x > 0]
+-- 方法二：使用列表的高级函数
+-- (1) 先用filter筛选出l中所有正数，组成正数列表
+-- (2) 再用map对正数列表执行平方操作，组成平方列表
+-- (3) 最后使用foldr对平方列表进行累加
+f2 :: [Int] -> Int
+f2 l = foldr (+) 0 (map sqr (filter pos l))
+    where pos x = x >0
+          sqr x = x^2
+-- 方法三：改良方法二，使用匿名函数来取代辅助函数
+f3 :: [Int] -> Int
+f3 l = foldr (+) 0 (map (\x -> x^2) (filter (\x -> x > 0) l))
