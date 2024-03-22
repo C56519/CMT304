@@ -6,7 +6,7 @@ type Coord = (Int, Int)
 -- 1.3 A visit record list, recording whether each pixel has been visited.
 type Visited = [[Bool]]
 
--- 2 Main Functions.
+-- 2 Main Function
 -- Function: Finds the maximum number of connected components of a binary image.
 -- Arguments: l: a list of binary images.   v: A value to find (0 or 1).
 -- Return: the maximum number of connected components for this image.
