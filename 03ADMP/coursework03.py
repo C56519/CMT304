@@ -105,11 +105,11 @@ plt.title("Training loss")
 
 # V plot
 plt.subplot(1, 2, 2)
-plt.plot(time, voltage, label="True voltage", alpha=0.6, color='red')
-plt.plot(time, v_nn(params, time), label="Predicted voltage", linestyle='dashed', color='green')
+#plt.plot(time, voltage, label="True voltage", alpha=0.6, color='red')
+plt.plot(time, v_nn(params, time), label="Predicted voltage", color='green')
 plt.xlabel('Time(s)')
 plt.ylabel('Voltage(V)')
-plt.title("Predicted voltage vs. True voltage")
+plt.title("Predicted voltage")
 plt.legend()
 
 plt.tight_layout()
