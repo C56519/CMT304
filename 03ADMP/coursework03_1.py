@@ -32,7 +32,7 @@ def loss_function(params, t, actual_v):
 # 4.1 Computing the gradient of the loss function.
 gradient_function = jit(grad(loss_function))
 # 4.2 Define the parameter update function.
-def parameters_update(params, time, voltage):
+def parameters_update(params, time, voltage): 
     current_gradient = gradient_function(params, time, voltage)
     new_params = params - LEARNING_RATE * current_gradient
     return new_params
