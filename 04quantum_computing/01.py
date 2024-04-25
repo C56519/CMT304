@@ -24,7 +24,7 @@ b = Bloch()
 b.add_states([psi_x,psi_y,psi_w])
 b.show()
 
-# 使用Hadamard门（H门）来创建新的量子态从标准基态 |0⟩ 和 |1⟩
+# 使用Hadamard门（H门）从标准基态 |0⟩ 和 |1⟩ 来创建新的量子态
 H = 1/np.sqrt(2) * Qobj([[1,1],[1,-1]]) # or H = snot()
 Psi0 = H * ket("0") # or Zero
 Psi1 = H * ket("1") # or One

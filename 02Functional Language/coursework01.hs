@@ -1,45 +1,48 @@
--- 1 Define some type synonyms.
--- 1.1 A binary picture, meaning a two-dimensional list formed by integers.
-type BinaryImage = [[Int]]
--- 1.2 The coordinates of a pixel.
+import Data.Array
+import Data.List (foldl')
+
+type BinaryImage = [[Int]] -- 二维列表表示的图像
+type ImageArray = Array (Int, Int) Int -- 数组表示的图像
+type Visited = Array (Int, Int) Bool
 type Coord = (Int, Int)
--- 1.3 A visit record list, recording whether each pixel has been visited.
-type Visited = [[Bool]]
 
--- 深度优先搜索
--- 使用坐标而非整个图进行DFS
-dfs :: BinaryImage -> Coord -> Int -> [[Bool]] -> (Int, [[Bool]])
-dfs image (x, y) v visited rows cols
-    | not (ifInBounds (x, y)) || visited !! x !! y || image !! x !! y /= v = (0, visited)
-    | otherwise = let
-        newVisited = (take x visited) ++ [take y (visited !! x) ++ [True] ++ drop (y + 1) (visited !! x)] ++ (drop (x + 1) visited)
-        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-        (count, finalVisited) = foldl (\(c, vst) (dx, dy) -> let (nc, nvst) = dfs image (x + dx, y + dy) v vst in (c + nc, nvst)) (1, newVisited) directions
-      in (count, finalVisited)
-    where
-        ifInBounds :: Coord -> Bool
-        ifInBounds (x, y) = x >= 0 && y >= 0 && x < rows && y < cols
-        updateVisited :: Int -> Int -> Visited -> Visited
-        updateVisited x y visited = 
-          take x visited ++ [take y (visited !! x) ++ [True] ++ drop (y + 1) (visited !! x)] ++ drop (x + 1) visited
-
-
--- 主函数，开始DFS并找到最大连通组件
-nlcc :: BinaryImage -> Int -> Int
-nlcc l v =
-  let
+-- 将二维列表转换为数组
+createImageArray :: BinaryImage -> ImageArray
+createImageArray l = listArray ((0, 0), (rows - 1, cols - 1)) (concat l)
+  where
     rows = length l
-    cols = if rows == 0 then 0 else length (head l)
-    visited = replicate rows (replicate cols False)
-    allCoords = [(x, y) | x <- [0..rows - 1], y <- [0..cols - 1]]
-    
-    -- 对每个未访问的点执行DFS，寻找最大连通组件
-    dfsAll :: [(Int, Int)] -> [[Bool]] -> Int -> Int
-    dfsAll [] _ maxCount = maxCount
-    dfsAll ((x, y):cs) visited maxCount =
-      if visited !! x !! y || l !! x !! y /= v then dfsAll cs visited maxCount
-      else
-        let (count, newVisited) = dfs l (x, y) v visited
-        in dfsAll cs newVisited (max maxCount count)
+    cols = length (head l)
 
-  in dfsAll allCoords visited 0
+-- 使用数组重写的主函数
+nlcc :: BinaryImage -> Int -> Int
+nlcc l v = maximum $ map (\coord -> snd $ exploreNeighbors coord visited) allCoords
+  where
+    imageArray = createImageArray l
+    ((_, _), (xMax, yMax)) = bounds imageArray
+    
+    allCoords = range $ bounds imageArray
+    visited = listArray (bounds imageArray) (repeat False)
+
+    ifInBounds :: Coord -> Bool
+    ifInBounds (x, y) = x >= 0 && y >= 0 && x <= xMax && y <= yMax
+
+    getNeighbors :: Coord -> [Coord]
+    getNeighbors (x, y) = filter ifInBounds [(x-1, y), (x+1, y), (x, y-1), (x, y + 1)]
+
+    updateVisitList :: Coord -> Visited -> Visited
+    updateVisitList (x, y) vl = vl // [((x, y), True)]
+
+    exploreNeighbors :: Coord -> Visited -> (Visited, Int)
+    exploreNeighbors (x, y) vis
+      | not (ifInBounds (x, y)) = (vis, 0)
+      | vis ! (x, y) = (vis, 0)
+      | imageArray ! (x, y) /= v = (vis, 0)
+      | otherwise =
+          let
+            vis' = updateVisitList (x, y) vis
+            neighbors = getNeighbors (x, y)
+            computingResult (vi, sum) coord = 
+              let (newVi, result) = exploreNeighbors coord vi
+              in (newVi, sum + result)
+            (finalVis, total) = foldl' computingResult (vis', 1) neighbors
+          in (finalVis, total)

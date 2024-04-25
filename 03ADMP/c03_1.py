@@ -1,9 +1,6 @@
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-import jax
-import jax.numpy as jnp
-from jax import grad, vmap, jit
 
 # 1 Load the dataset and divide it into input and lable lists.
 file_path = 'measurements.csv'
@@ -14,8 +11,8 @@ voltage = np.array(data[:, 1])
 time = time.reshape(-1, 1)
 
 # 2 Hyperparameters
-MODEL_LEARNING_RATE = 0.001     # Learning rate of the optimiser
-NEURONS_NUMBERS = 100           # Number of neurons
+MODEL_LEARNING_RATE = 0.02     # Learning rate of the optimiser
+NEURONS_NUMBERS = 200           # Number of neurons
 TRAINING_EPOCHS = 1000          # Number of training epochs
 VALIDATION_RATES = 0.2          # Rate of dividing the validation set
 
@@ -52,19 +49,20 @@ predictions = model.predict(time)
 np.savetxt('predictions_1.csv', predictions)
 
 # 6 Draw graphs
+plt.figure(figsize=(14, 6))
 # (1) Graph of loss changes during training
+plt.subplot(1, 2, 1)
 plt.plot(history.history['loss'], label='Train Loss')
 plt.plot(history.history['val_loss'], label='Validation Loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.legend()
-plt.show()
 
 # (3) Graph of prediction and actual voltage comparison
-plt.figure(figsize=(14, 6))
+plt.subplot(1, 2, 2)
 plt.scatter(time, predictions, label='Predicted Voltage', color='red', s=2)
 plt.scatter(time, voltage, label='True Voltage', alpha=0.6, color='blue', s=2)
-plt.title('Predicted Voltage & True Voltage')
+plt.title('Tensorflow Framework')
 plt.xlabel('Time')
 plt.ylabel('Voltage')
 plt.legend()

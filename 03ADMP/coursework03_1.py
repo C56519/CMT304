@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 # 0 Hyperparameters
 LEARNING_RATE = 0.01
 TRAINING_NUMBERS = 30000
-# gamma, A, B, omega
-INITIAL_PARAMTERS = [1.0, 1.0, 0.1, 9.0]
+# alpha, A, B, beta
+INITIAL_PARAMTERS = [0.0, 1.0, 0.1, 9.0]
 
 # 1 Read the CSV file and load the data.
 data = np.loadtxt('measurements.csv', delimiter=',', skiprows=1)
@@ -16,9 +16,9 @@ voltage = data[:, 1]
 
 # 2 Define the circuit equation.
 def circuit_equation(t, params):
-    gamma, A, B, w = params
-    # v(t) = e^(−γt) * (A*cos(ωt) + B*sin(ωt))
-    vt = jnp.exp(-gamma * t) * (A * jnp.cos(w * t) + B * jnp.sin(w * t))
+    alpha, A, B, beta = params
+    # V(t) = e^(αt) * (A*cos(βt) + B*sin(βt))
+    vt = jnp.exp(alpha * t) * (A * jnp.cos(beta * t) + B * jnp.sin(beta * t))
     return vt
 
 # 3 Loss function.
@@ -53,11 +53,11 @@ final_params = params
 voltage_prediction = circuit_equation(time, final_params)
 # Print the final parameters.
 print(f"Final paremeters:")
-print(f"gamma: {final_params[0]}")
+print(f"α: {final_params[0]}")
 print(f"A: {final_params[1]}")
 print(f"B: {final_params[2]}")
-print(f"omega: {final_params[3]}")
-print(f"Final equation: v(t) = e^(−{final_params[0]:.2f}t) * ({final_params[1]:.2f}*cos({final_params[3]:.2f}t) + {final_params[2]:.2f}*sin({final_params[3]:.2f}t))")
+print(f"β: {final_params[3]}")
+print(f"Final equation: v(t) = e^({final_params[0]:.2f}t) * ({final_params[1]:.2f}*cos({final_params[3]:.2f}t) + {final_params[2]:.2f}*sin({final_params[3]:.2f}t))")
 
 # 6 Drawing.
 plt.figure(figsize=(14, 6))
