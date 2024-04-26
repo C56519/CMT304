@@ -12,8 +12,8 @@ F = tensor(qeye(2), qeye(2), qeye(2), qeye(2))
 F_inv = F.dag()
 
 # 定义 CNOT 门
-CNOT1 = cnot(N=4, control=0, target=2)
-CNOT2 = cnot(N=4, control=1, target=3)
+CNOT1 = create_cnot_gate(N=4, control=0, target=2)
+CNOT2 = create_cnot_gate(N=4, control=1, target=3)
 
 # 准备分析结果的数据结构
 analysis_results = []
